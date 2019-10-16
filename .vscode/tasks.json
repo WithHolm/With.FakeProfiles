@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "AzureFunctionsPSWorker",
+            "type": "shell",
+            "command": "func host start",
+            "problemMatcher": ["$func-watch"],
+            "options": {
+                "cwd": "${workspaceFolder}/dev/code/azfunctions"
+            }
+        },
+        {
+            "label": "PSInstance",
+            "type": "shell",
+            "dependsOn":["AzureFunctionsPSWorker"],
+            "command": "$psversiontable",
+            "problemMatcher": []
+        }
+    ]
+}

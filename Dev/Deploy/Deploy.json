@@ -1,0 +1,99 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "BaseName": {
+            "type": "string",
+            "defaultValue":"ProfileThing"
+        },
+        "Loc": {
+            "type": "string",
+            "defaultValue": "westeurope"
+        },
+        "Cognitive_Sku": {
+            "allowedValues": ["S0","F0"],
+            "type": "string"
+        }
+    },
+    "variables": {
+        "RGName": "[concat('RG-',parameters('BaseName'))]",
+        
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2018-05-01",
+            "location": "[parameters('Loc')]",
+            "name": "[variables('RGName')]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "name": "storageDeployment",
+            "resourceGroup": "[variables('RGName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups/', variables('RGName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {
+                        "AAccount":"[concat('Automation-',uniqueString(parameters('BaseName')))]"
+                    },
+                    "resources": [
+                        {
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2017-10-01",
+                            "name": "[toLower(concat('store',uniqueString(parameters('BaseName'))))]",
+                            "location": "[parameters('Loc')]",
+                            "kind": "StorageV2",
+                            "sku": {
+                                "name": "Standard_LRS"
+                            }
+                        },
+                        {
+                            "apiVersion": "2017-04-18",
+                            "name": "[concat('CS-Face-', uniqueString(resourceId('Microsoft.Resources/resourceGroups/', variables('RGName'))))]",
+                            "location": "[parameters('Loc')]",
+                            "type": "Microsoft.CognitiveServices/accounts",
+                            "kind": "Face",
+                            "sku": {
+                                "name": "[parameters('Cognitive_Sku')]"
+                            },
+                            "properties": {
+                                "customSubDomainName": "[parameters('BaseName')]"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts",
+                            "apiVersion": "2015-10-31",
+                            "name": "[variables('AAccount')]",
+                            "location": "westeurope",
+                            "properties": {}
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/certificates",
+                            "apiVersion": "2015-10-31",
+                            "name": "[concat(variables('AAccount'), '/AzureRunAsCertificate')]",
+                            "dependsOn": [
+                                "[resourceId('Microsoft.Automation/automationAccounts', variables('AAccount'))]"
+                            ],
+                            "properties": {
+                                "description": "This certificate is used to authenticate with the service principal that was automatically created for this account. For details on this service principal and certificate, or to recreate them, go to this account’s Settings. For example usage, see the tutorial runbook in this account.",
+                                "isExportable": true,
+                                "thumbprint": "2D2B036C2AB1A8BBEB69731AAB1859D880DFFCAD",
+                                "base64Value": "[parameters('certificates_AzureRunAsCertificate_base64Value')]"
+                            }
+                        }
+                    ],
+                    "outputs": {}
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

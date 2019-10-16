@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "BaseName": {
+            "value": "ProfileCreator"
+        },
+        "Loc": {
+            "value": "westeurope"
+        },
+        "Cognitive_Sku": {
+            "value": "S0"
+        }
+    }
+}

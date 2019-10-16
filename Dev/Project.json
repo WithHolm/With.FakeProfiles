@@ -1,0 +1,30 @@
+{
+    "AzureContext":{
+        "SubscriptionName":"VSE",
+        "TenantName":"Meholm.com"
+    },
+    "Deploy":{
+        "ProjectName":"ProfileCreation",
+        "Location":"West-Europe"
+    },
+    "ProfileFeatures":{
+        "Firstname":{
+            "Enabled":true
+        },
+        "MiddleName":{
+            "Enabled":true
+        },
+        "Surname":{
+            "Enabled":true
+        },
+        "Gender":{
+            "Enabled":true
+        },
+        "Company":{
+            "Enabled":true
+        },
+        "Picture":{
+            "Enabled":true
+        }
+    }
+}
