@@ -1,21 +1,44 @@
 {
     "version": "2.0.0",
     "tasks": [
+        // {
+        //     "label": "AzureFunctionsPSWorker",
+        //     "type": "process",
+        //     "command": "func host start",
+        //     "problemMatcher": [
+        //         "$func-watch"
+        //     ],
+        //     "isBackground": true,
+        //     "options": {
+        //         "cwd": "${workspaceFolder}/dev/code/azfunctions"
+        //     }
+        // },
         {
-            "label": "AzureFunctionsPSWorker",
+            "label": "Build DEV to Azure",
             "type": "shell",
-            "command": "func host start",
-            "problemMatcher": ["$func-watch"],
+            "command": "pwsh -command {invoke-psake .\\deploy.psake.ps1 -parameters @{Action = 'Deploy';Pipeline='Dev'}}",
             "options": {
-                "cwd": "${workspaceFolder}/dev/code/azfunctions"
-            }
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
         },
         {
-            "label": "PSInstance",
+            "label": "TearDown DEV in Azure",
             "type": "shell",
-            "dependsOn":["AzureFunctionsPSWorker"],
-            "command": "$psversiontable",
+            "command": "pwsh -command {invoke-psake .\\deploy.psake.ps1 -parameters @{Action = 'Teardown';Pipeline='Dev'}}",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
             "problemMatcher": []
+        },
+        {
+            "type": "func",
+            "command": "host start",
+            "problemMatcher": "$func-watch",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/AzFunctions"
+            }
         }
     ]
 }

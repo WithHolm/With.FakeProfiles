@@ -1,0 +1,11 @@
+{
+  "bindings": [
+    {
+      "name": "InputBlob",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "pictures/Import/{name}.jpeg",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}

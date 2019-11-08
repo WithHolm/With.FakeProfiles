@@ -1,6 +1,6 @@
 {
     "azureFunctions.templateFilter": "Verified",
-    "azureFunctions.deploySubpath": ".",
+    "azureFunctions.deploySubpath": "AzFunctions",
     "azureFunctions.projectLanguage": "PowerShell",
     "azureFunctions.projectRuntime": "~2",
     "debug.internalConsoleOptions": "neverOpen"
