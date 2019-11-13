@@ -81,6 +81,66 @@ Function FlattenObject {
     }
 }
 
+
+
+function Get-TenantID
+{
+    <#
+        .Synopsis
+        Get The TenantID of a specified domain name or UPN/Mail
+        .EXAMPLE
+        Get-Tenant "Domain.com"
+        .EXAMPLE
+        get-Tenant "User@Domain.com"
+        .OUTPUTS
+        String
+    #>
+    [CmdletBinding(DefaultParameterSetName = "Dynamic")]
+    param (
+        [Parameter(
+            ParameterSetName = 'Dynamic',
+            Position = 0)]
+        [object]$input,
+        [Parameter(ParameterSetName = 'Domain')]
+        [String]$Domain,
+        [Parameter(ParameterSetName = 'Upn')]
+        [String]$UPN
+    )
+    
+    process
+    {
+        if ($PSBoundParameters.ContainsKey("input"))
+        {
+            $input = $($PSBoundParameters["input"])
+            write-verbose "Object $($input)"
+            if ($input -like "*@*")
+            {
+                return $(Get-TenantID -UPN $input)
+            }
+            else
+            {
+                return $(Get-TenantID -Domain $input) 
+            }
+        }
+        elseif ($PSBoundParameters.ContainsKey("UPN"))
+        {
+            $Domain = $upn.split('@')[-1]
+        }
+
+        $OpenIDConfig = Invoke-RestMethod -Method get -UseBasicParsing -Uri "https://login.windows.net/$domain/.well-known/openid-configuration"
+        $return = $OpenIDConfig.authorization_endpoint.Split("/").where{try {[guid]::Parse($_) -ne $null}catch {$false}}|select -first 1
+
+        if (!$return)
+        {
+            throw "Could not find TenantID for $domain"
+        }
+        else
+        {
+            return $return
+        }
+    }
+}
+
 $InformationPreference = "Continue"
 #Endregion
 
@@ -103,6 +163,8 @@ Properties{
     }
 
 }
+
+
 
 task default -depends Validate,Teardown,Deploy
 
@@ -171,7 +233,25 @@ task DeployResources -depends ResourceGroup,StorageAccount,AppServicePlan,Functi
 # Task AutomationServices -depends AutomationAccount,ADRunAsAccount,AutomationConnection
 
 Task Validate{
-    
+    $Context = Get-AzContext
+    $TenantID = Get-TenantID -Domain $options.az.tenantname
+
+    if($Context.Tenant.Id -ne $TenantID)
+    {
+        Throw "Context is not set to correct tenant. Should be '$TenantID'($($options.az.tenantname)), but is $($Context.Tenant.Id)"
+    }
+    else {
+        Write-Information "Connected to the correct tenant '$($options.az.tenantname)'"
+    }
+
+    if($Context.Subscription.Name -ne $options.az.SubscriptionName)
+    {
+        Throw "Context is not set to correct tenant. Should be '$($options.az.SubscriptionName)', but is $($Context.Subscription.Name)"
+    }
+    else {
+        Write-Information "Connected to the correct subscription '$($options.az.SubscriptionName)'"
+    }
+
 }
 
 Task ResourceGroup{

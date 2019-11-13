@@ -84,14 +84,7 @@ function Get-RandomFace {
                 
                 #Figure out fileame for export. if filename is taken add filename1,filename2 etc untill it find one that doesent exist
                 $TestFile = [System.IO.FileInfo](Join-Path $OutputFolder "$([guid]::NewGuid().Guid).jpeg")
-                # $TestInt = 1
-                # while($TestFile.exists)
-                # {
-                #     $Newname = "$BaseName$testint$Extension"
-                #     $Testfile = [System.IO.FileInfo]$(join-path $OutputFile.Directory $Newname)
-                #     $TestInt++
-                # }
-
+                
                 #Save the file
                 $Completedcount = @($runspaces|?{$_.Status.IsCompleted -and $_.Processed}).count +1
                 Write-Information "Saving image to $($Testfile.fullname) ($($Completedcount.ToString().PadLeft($Totalcount.tostring().Length,"0"))/$Totalcount)"

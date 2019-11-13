@@ -1,0 +1,16 @@
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\bin\Debug\netstandard2.0\Decoy.deps.json
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\bin\Debug\netstandard2.0\Decoy.dll
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\bin\Debug\netstandard2.0\Decoy.pdb
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\obj\Debug\netstandard2.0\Decoy.csprojAssemblyReference.cache
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\obj\Debug\netstandard2.0\Decoy.AssemblyInfoInputs.cache
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\obj\Debug\netstandard2.0\Decoy.AssemblyInfo.cs
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\obj\Debug\netstandard2.0\Decoy.dll
+C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\AzFunctionsModule\Decoy\obj\Debug\netstandard2.0\Decoy.pdb
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\bin\Debug\netstandard2.0\Decoy.deps.json
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\bin\Debug\netstandard2.0\Decoy.dll
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\bin\Debug\netstandard2.0\Decoy.pdb
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\obj\Debug\netstandard2.0\Decoy.csprojAssemblyReference.cache
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\obj\Debug\netstandard2.0\Decoy.AssemblyInfoInputs.cache
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\obj\Debug\netstandard2.0\Decoy.AssemblyInfo.cs
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\obj\Debug\netstandard2.0\Decoy.dll
+C:\Users\Phil\source\repos\With.FakeProfiles\PSAzFunctions\decoy\obj\Debug\netstandard2.0\Decoy.pdb
