@@ -23,6 +23,8 @@
             Functions = @{
                 Name = "{Pipeline}{Options.Project.Name}FN"
                 LocalPath = "AzFunctions"
+                #How many threads do you want to run at once max for the function runspace? 1-10
+                Concurrencycount = 10
             }
             StorageAccount = @{
                 #Select a random number at the end here..
@@ -30,11 +32,10 @@
                 Sku = "Standard_LRS"
                 Tables = @(
                     "Config"
-                    "Faces"
+                    "Faces",
+                    "Progress"
                 )
                 Queues = @(
-                    "imgimportqueue"
-                    "imgimportstart"
                 )
                 Containers = @(
                     "pictures"

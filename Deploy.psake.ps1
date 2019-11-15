@@ -400,7 +400,9 @@ Task FunctionsApp -depends ResourceGroup,AppServicePlan,CognitiveServices_Face{
         AzureWebJobsStorage = "DefaultEndpointsProtocol=https;AccountName=$($script:StorageAccountName);AccountKey=$(($script:StorageAccount|Get-AzStorageAccountKey)[0].value);EndpointSuffix=core.windows.net"
         API_Location_Face = $location.replace(" ",'')
         API_SubscriptionKey_Face = ($Script:Cogninitiveservices|Get-AzCognitiveServicesAccountKey).key1
+        PSWorkerInProcConcurrencyUpperBound = "$($options.Az.Resources.Functions.Concurrencycount)"
     }
+    
     @{
         IsEncrypted = $false
         Values = [pscustomobject]$appsettings
