@@ -2,13 +2,49 @@
     Project = @{
         Pipeline = "Dev"
         Name = "FakeProfiles"
+        ConfigName = "Config"
+        #Config should never be more than 2 levels
         Azconfig = @{
+            ImageImport = @{
+                #Biggest batch to import from internet
+                MaxBatch = 10
+                #Folder to use dusing import
+                Folder = "Import"
+            }
+            Resize = @{
+                #Dimensions to save image as
+                Dimension = @(90,256,512,1024)
+                #0-100, Higher means better, but bigger size cost
+                Quality=80
+            }
             Image = @{
-                ImageDimensions = @(90,256)
-                MaxImages = 2000
+                Container="Pictures"
+                #Biggest batch to import from internet
+                ImportMaxBatch = 10
+                #Dimensions to save image as
+                Dimension = @(90,256,512,1024)
+                #Folder to use dusing import
+                ImportFolder = "Import"
+                #Folder to use when storig profilefolder
+                Storage = "Store"
+                #0-100, Higher means better, but bigger size cost
+                Quality=80
             }
             AI = @{
-                CallsPerMinute = 20
+                FaceAttributes = @("age","gender","smile","glasses","hair","facialHair")
+                CallsPerMinute = 10
+                ShouldBePresent = @(
+                    "age",
+                    "gender",
+                    "smile",
+                    "facialhair.moustache",
+                    "facialhair.beard",
+                    "facialhair.sideburns",
+                    "glasses",
+                    "hair.bald"
+                    "hair.invisible"
+                    "hair.hairColor"
+                )
             }
         }
     }
@@ -34,6 +70,7 @@
                     "Config"
                     "Faces",
                     "Progress"
+                    "Import"
                 )
                 Queues = @(
                 )

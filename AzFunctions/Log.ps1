@@ -10,7 +10,7 @@ function write-LogInformation {
     }
     
     process {
-        Write-LogLine -Type Information -Callstack ((Get-PSCallStack)[1]) -message $Message
+        Write-LogLine -Type Information -Callstack (Get-PSCallStack|select -Skip 1) -message $Message
         # Suspend-FunctionLogging
     }
     
@@ -28,19 +28,21 @@ function Set-FunctionLogging {
     begin {
         initLog
         $ScriptPath = (Get-PSCallStack)[1].ScriptName
+        # Write-host "Setting enablelog to $enabled for $ScriptPath"
     }
     
     process {
-        if($Enabled)
+        if($Enabled -eq $true)
+        {
+            Write-host "Adding $ScriptPath to log allow list" 
+            $Global:EnableLog+=$ScriptPath
+        }
+        else 
         {
             if($Global:EnableLog.Contains($ScriptPath))
             {
                 $Global:EnableLog.Remove($ScriptPath)
             }
-        }
-        else 
-        {
-            $Global:EnableLog+=$ScriptPath
         }
     }
     
@@ -62,24 +64,37 @@ function Write-LogLine {
         [ValidateSet("Information")]
         [String]$Type,
         [string]$message,
-        [System.Management.Automation.CallStackFrame]$Callstack
+        [System.Management.Automation.CallStackFrame[]]$Callstack
 
     )
     
     begin {
         initLog
-        if(!$Global:EnableLog.Contains($ScriptPath))
-        {
-            return
+        Write-host "Is callstack enabled for log?"
+        $Global:EnableLog|%{
+            Write-host $_
+        }
+        Write-host ***
+        $Log = $false
+        $Callstack|%{
+            # Write-host "checking $($_.ScriptName)"
+            if(!$Global:EnableLog.Contains($_.ScriptName))
+            {
+                $Log = $true
+                # return
+            }
         }
     }
     
     process {
-        $LoggingName = $Callstack.Command 
-        switch($type)
+        if($log -eq $true)
         {
-            "Information"{
-                Write-Information "$loggingName`: $message"
+            $LoggingName = $Callstack.Command 
+            switch($type)
+            {
+                "Information"{
+                    Write-Information "$loggingName`: $message"
+                }
             }
         }
         
@@ -89,5 +104,3 @@ function Write-LogLine {
         
     }
 }
-
-# ([System.IO.FileInfo]$PSScriptRoot).Directory.Parent.FullName

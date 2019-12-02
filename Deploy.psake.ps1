@@ -168,7 +168,7 @@ Properties{
 
 task default -depends Validate,Teardown,Deploy
 
-task Deploy -precondition {$Action -eq "Deploy"} -depends DeployResources {
+task Deploy -precondition {$Action -eq "Deploy"} -depends DeployResources,SetupSolutionConfig,DeployCode {
     foreach($res in $options.az.resources.getenumerator()|?{$_.name -ne "ResourceGroup"})
     {
         Write-Output "Checking that $($res.name) is deployed"
@@ -276,18 +276,18 @@ Task ResourceGroup{
 Task StorageAccount -depends ResourceGroup{
     $Script:StorageAccountName = Format-StringModern -InputString $options.az.resources.StorageAccount.name -object $FormatStringRefObject
     $Script:StorageAccountName = $Script:StorageAccountName.tolower()
-    $StorageAccount = Get-AzStorageAccount|?{$_.StorageAccountName -like "$StorageAccountName*" -and $_.ResourceGroupName -like "$DeploymentName*"}
+    $Script:StorageAccount = Get-AzStorageAccount|?{$_.StorageAccountName -like "$StorageAccountName*" -and $_.ResourceGroupName -like "$DeploymentName*"}
     if(!$StorageAccount)
     {
         Write-Output "Creating new StorageAccount:'$script:StorageAccountName'"
-        $StorageAccount = New-AzStorageAccount -Location $options.az.location -Name $StorageAccountName -Tag $ResourceTag -SkuName $options.az.resources.storageaccount.sku -Kind StorageV2 -ResourceGroupName $Script:ResourceGroupName
+        $Script:StorageAccount = New-AzStorageAccount -Location $options.az.location -Name $StorageAccountName -Tag $ResourceTag -SkuName $options.az.resources.storageaccount.sku -Kind StorageV2 -ResourceGroupName $Script:ResourceGroupName
     }
     else {
         Write-Output "StorageAccountName $StorageAccountName already exists"
     }
 
-    Write-Information "Testing that all tables have been made"
-    $tables = $StorageAccount|Get-AzStorageTable 
+    Write-Information "Testing that all storage tables have been made"
+    $tables = $Script:StorageAccount|Get-AzStorageTable 
     if(@($options.az.resources.StorageAccount.Tables).count -gt 0)
     {
         foreach($strtable in $options.az.resources.StorageAccount.Tables)
@@ -303,8 +303,8 @@ Task StorageAccount -depends ResourceGroup{
         }
     }
 
-    Write-Information "Testing that all Containers have been made"
-    $containers = $StorageAccount|Get-AzStorageContainer
+    Write-Information "Testing that all storage containers have been made"
+    $containers = $Script:StorageAccount|Get-AzStorageContainer
     if(@($options.az.resources.StorageAccount.Containers).count -gt 0)
     {
         foreach($Container in $options.az.resources.StorageAccount.Containers)
@@ -312,7 +312,7 @@ Task StorageAccount -depends ResourceGroup{
             if(!($containers|?{$_.Name -eq $Container}))
             {
                 Write-Information "`tCreating container '$Container'"
-                New-AzStorageContainer -Name $Container -Context $StorageAccount.Context
+                New-AzStorageContainer -Name $Container -Context $Script:StorageAccount.Context
             }
             else {
                 Write-Information "`tcontainer '$Container' alredy created"
@@ -320,8 +320,8 @@ Task StorageAccount -depends ResourceGroup{
         }
     }
 
-    Write-Information "Testing that all Containers have been made"
-    $Queues = $StorageAccount|Get-AzStorageQueue
+    Write-Information "Testing that all storage queue have been made"
+    $Queues = $Script:StorageAccount|Get-AzStorageQueue
     if(@($options.az.resources.StorageAccount.Queues).count -gt 0)
     {
         foreach($Qu in $options.az.resources.StorageAccount.Queues)
@@ -329,7 +329,7 @@ Task StorageAccount -depends ResourceGroup{
             if(!($Queues|?{$_.Name -eq $Qu}))
             {
                 Write-Information "`tCreating container '$Qu'"
-                New-AzStorageQueue -Name $Qu -Context $StorageAccount.Context
+                New-AzStorageQueue -Name $Qu -Context $Script:StorageAccount.Context
             }
             else {
                 Write-Information "`tcontainer '$Qu' alredy created"
@@ -338,7 +338,7 @@ Task StorageAccount -depends ResourceGroup{
     }
 
     
-    $script:StorageAccount = $StorageAccount
+    # $script:StorageAccount = $StorageAccount
 }
 
 Task AppServicePlan -depends ResourceGroup{
@@ -413,72 +413,38 @@ Task FunctionsApp -depends ResourceGroup,AppServicePlan,CognitiveServices_Face{
     $script:FunctionsApp = $FunctionsApp
 }
 
-# Task AutomationAccount -depends ResourceGroup,KeyVault,ADRunAsAccount{
-#     $Script:AutomationAccountName = Format-StringModern -InputString $options.az.resources.AutomationAccount.name  -object $FormatStringRefObject
-#     $AutomationAccount = Get-AzAutomationAccount|?{$_.AutomationAccountName -eq $Script:AutomationAccountName -and $_.ResourceGroupName -eq $Script:ResourceGroupName}
-#     if(!$AutomationAccount)
-#     {
-#         Write-output "Creating AutomationAccount '$Script:AutomationAccountName'"
-#         $AutomationAccount = New-AzAutomationAccount -ResourceGroupName $Script:ResourceGroupName -Name $Script:AutomationAccountName -Location $options.az.location -Plan Free -Tags $ResourceTag
-#         # New-AzAutomationConnection -
-#     }
-#     else {
-        
-#         Write-output "AutomationAccount '$Script:AutomationAccountName' already exists"
-#     }
-#     $Script:AutomationAccount = $AutomationAccount
+Task SetupSolutionConfig{
+    $AddArray = @()
+    foreach($Key in $options.project.Azconfig.keys)
+    {
+        # $Key
+        $Main = $options.project.Azconfig.$key
+        foreach($subkey in $Main.keys)
+        {
+            $Sub = $Main.$subkey
+            $AddArray += @{
+                PartitionKey = $key
+                RowKey = $subkey
+                property = @{
+                    Value = $Sub|ConvertTo-Json -Depth 99
+                }
+            }
+        }
+    }
+    
+    $Tbl = Get-AzTableTable -TableName $options.project.ConfigName -storageAccountName $Script:StorageAccount.StorageaccountName -resourceGroup $Script:StorageAccount.ResourcegroupName
+    
+    Write-Information "Removing old Config"
+    Get-AzTableRow -Table $Tbl|%{
+        [void](Remove-AzTableRow -Table $Tbl -RowKey $_.RowKey -PartitionKey $_.PartitionKey)
+    }
 
-#     # $RunasConnectionName
-#     if(!($Script:AutomationAccount|Get-AzAutomationConnection|?{$_.name -eq "RunAsConnection"}))
-#     {
-#         $CertName = "AutomationRunas"
-#         Write-output "Creating RunasConnection for AutomationAccount"
-#         $Certificate = $script:Keyvault|Get-AzKeyVaultCertificate|?{$_.name -eq $CertName}
-#         if(!$Certificate)
-#         {
-#             Write-Output "Creating keyvault Certificate '$CertName'"
-#             $policy = New-AzKeyVaultCertificatePolicy -SubjectName $options.az.resources.Keyvault.CertificateSubject -IssuerName Self -ValidityInMonths 24
-#             $certificate = Add-AzKeyVaultCertificate -VaultName $script:KeyvaultName -Name $CertName -CertificatePolicy $policy
-#             while(($script:Keyvault|Get-AzKeyVaultCertificate|?{$_.name -eq $CertName}|Get-AzKeyVaultCertificateOperation).Status -eq 'Completed')
-#             {
-#                 Write-Output "Waiting for certificate to enable"
-#                 start-sleep -Seconds 5
-#             }
-#             $certificate = $script:Keyvault|Get-AzKeyVaultCertificate|?{$_.name -eq $CertName}
-#         }
-#         $Certificate
-#         $byte = $Certificate.Certificate.Export("Cert")
-#         (Get-AzKeyVaultCertificate -VaultName 'Dev-FakeProfiles-KV'|? name -eq "testing")|gm
-
-#         # #Test if azadapp has 
-#         # if(!($script:AzADApplication|Get-AzADAppCredential))
-#         # {
-#         #     $script:AzADApplication|New-AzADAppCredential -
-#         # }
-#         # $RunAsValues = @{"ApplicationId" = $ApplicationId; "TenantId" = (Get-AzContext).Tenant.Id; "CertificateThumbprint" = $Thumbprint; "SubscriptionId" = $SubscriptionId}
-#         # $Script:AutomationAccount|New-AzAutomationConnection -Name "RunasConnection" -ConnectionTypeName "AzureServiceprincipal" -ConnectionFieldValues 
-#     }
-# }
-
-# Task ADRunAsAccount -depends KeyVault{
-#     $Script:RunAsAccountName = Format-StringModern -InputString $options.az.resources.AutomationAccount.RunAsAccountName -object $FormatStringRefObject
-#     $AzADApplication = Get-AzADApplication|?{$_.DisplayName -eq $Script:RunAsAccountName}
-#     if(!$AzADApplication)
-#     {
-#         Write-Output "Creating Runas account '$Script:RunAsAccountName'"
-#         $AAAccountName = Format-StringModern -InputString $options.az.resources.AutomationAccount.Name -object $FormatStringRefObject
-#         $HomePage = "https://management.azure.com/subscriptions/$((Get-AzContext).Subscription.Id)/resourceGroups/$script:ResourceGroupName/providers/Microsoft.Automation/automationAccounts/$AAAccountName"
-#         $AzADApplication = New-AzADApplication -DisplayName $Script:RunAsAccountName -IdentifierUris "https://spn/$Script:RunAsAccountName" -HomePage $HomePage
-        
-#         Write-Output "Adding Application to Keyvault"
-#         $CertPermission = @("List","Delete","Create","Import","Update","Managecontacts","Getissuers","Listissuers","Setissuers","Deleteissuers","Manageissuers","Recover","Backup","Restore","Purge")
-#         $script:Keyvault|Set-AzKeyVaultAccessPolicy -PermissionsToKeys create,list,get,list,delete -PermissionsToSecrets set,list,get,delete -PermissionsToCertificates $CertPermission -ObjectId $AzADApplication.ObjectId
-#     }
-#     else {
-#         Write-Output "Runas account '$Script:RunAsAccountName' already exists"
-#     }
-#     $script:AzADApplication = $AzADApplication
-# }
+    $AddArray|%{
+        $HT = $_
+        Write-Information "Adding config $($_|ConvertTo-Json -Compress)"
+        [void](Add-AzTableRow -Table $Tbl @HT)
+    }
+}
 
 Task KeyVault -depends ResourceGroup{
     $script:KeyvaultName = Format-StringModern -InputString $options.az.resources.KeyVault.name  -object $FormatStringRefObject
@@ -522,4 +488,35 @@ Task CognitiveServices_Face -depends ResourceGroup{
         Write-Output "Cognitive service '$Script:CogninitiveservicesName' already exists"
     }
     $Script:Cogninitiveservices = $CognitiveServices
+}
+
+Task DeployCode -depends FunctionsApp{
+
+    Write-Information "Zipping AzFunctions Content"
+    $TempFolder = New-Item "$PSScriptRoot\AzFunctionsZip" -Force -ItemType Directory
+    $TempFolder.FullName
+    $TestFile = "$($TempFolder.fullname)\AzFunc.zip"
+    Write-Information "Compressing $testfile"
+    Compress-Archive -Path (Get-ChildItem "C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\").FullName -DestinationPath $TestFile -Force
+    # get-item "C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\Singleton"|
+    Write-Information "Getting Publishing cred"
+    $param = @{
+        ResourceGroupName = $script:ResourceGroupName
+        ResourceType = "Microsoft.Web/sites/config"
+        ResourceName = "$($script:FunctionsApp.Name)/publishingcredentials"
+        Action = "list"
+        ApiVersion = "2019-08-01"
+        Force = $true
+    }
+    $creds = Invoke-AzResourceAction @param
+    $username = $creds.Properties.PublishingUserName
+    $password = $creds.Properties.PublishingPassword
+
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $username,$password)))
+
+    $apiUrl = "https://$($script:FunctionsName).scm.azurewebsites.net/api/zipdeploy"
+    # $filePath = "<yourFunctionName>.zip"
+    Write-Information "Uploading to '$apiUrl'"
+    Invoke-RestMethod -Uri $apiUrl -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -Method Post -InFile $TestFile -ContentType "multipart/form-data"
+    Write-Information "Go to https://$($script:FunctionsName).scm.azurewebsites.net -> Debug menu at the top -> CMD -> Site -> wwwroot to check the contents"
 }
