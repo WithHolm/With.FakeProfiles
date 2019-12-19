@@ -18,7 +18,12 @@ function Invoke-Tooltips {
         $UsingTooltips|%{
             Write-Verbose "Checking tooltip rule '$_'"
             $tests = @($tooltips.$_.rules|%{
-                $Result = [bool]($_.command.invoke())
+                try{
+                    $Result = [bool]($_.command.invoke())
+                }
+                catch{
+                    $result = $false
+                }
                 Write-Debug "Rule '$($_.name)': $result"
                 # Write-Debug "Result was '$Result'" 
                 @{$_=$Result}
@@ -31,7 +36,7 @@ function Invoke-Tooltips {
                 {
                     $tooltips.$_.Triggered = $true
                 }
-                
+
                 if($Build_Function.TooltipPreference -eq "Continue")
                 {
                     Write-Warning $tooltips.$_.message
