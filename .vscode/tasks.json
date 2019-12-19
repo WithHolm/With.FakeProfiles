@@ -1,18 +1,6 @@
 {
     "version": "2.0.0",
     "tasks": [
-        // {
-        //     "label": "AzureFunctionsPSWorker",
-        //     "type": "process",
-        //     "command": "func host start",
-        //     "problemMatcher": [
-        //         "$func-watch"
-        //     ],
-        //     "isBackground": true,
-        //     "options": {
-        //         "cwd": "${workspaceFolder}/dev/code/azfunctions"
-        //     }
-        // },
         {
             "label": "Build DEV to Azure",
             "type": "shell",
@@ -32,13 +20,23 @@
             "problemMatcher": []
         },
         {
+            "label": "BuildModule",
+            "type": "shell",
+            "command": "pwsh -command {ipmo ./lib/Modules/AzFnHelp -force;Build-FnEndpoints -WorkingDirectory $pwd.path}",
+            "options": {
+                "cwd": "${workspaceFolder}/AzFunctions"
+            },
+            "problemMatcher": []
+        },
+        {
             "type": "func",
             "command": "host start",
             "problemMatcher": "$func-watch",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}/AzFunctions"
-            }
+            },
+            "dependsOn":"BuildModule"
         }
     ]
 }

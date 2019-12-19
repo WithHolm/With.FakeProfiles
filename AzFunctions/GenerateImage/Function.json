@@ -1,0 +1,15 @@
+{
+  "Scriptfile": "../lib/FakeProfile.psm1",
+  "entrypoint": "New-Image",
+  "bindings": [
+    {
+      "direction": "in",
+      "name": "QueueItem",
+      "type": "queueTrigger",
+      "queueName": "generateimage",
+      "connection": "AzureWebJobsStorage"
+    }
+  ],
+  "Disabled": false,
+  "Excluded": false
+}

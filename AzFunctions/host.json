@@ -12,5 +12,8 @@
   },
   "extensions": {
     "durableTask": {"azureStorageConnectionStringName": "AzureWebJobsStorage","hubName": "DurableFunctionsHub"}
+  },
+  "http": {
+    "Routeprefix":""
   }
 }

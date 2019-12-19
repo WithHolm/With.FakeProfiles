@@ -26,7 +26,7 @@ $QueueName = "imgimportq"
 $ProgresstableName = "Progress"
 $StorageBlob = "pictures"
 $LocalStorage = "$env:TEMP\Pic\$([guid]::NewGuid().Guid)"
-
+[void](new-item -ItemType Directory -Path $LocalStorage -Force)
 $cs = [Microsoft.Azure.Storage.CloudStorageAccount]::Parse($env:AzureWebJobsStorage)
 $SA = Get-AzStorageAccount|Where-Object{$_.StorageAccountName -eq $CS.credentials.AccountName}
 $container = $sa|Get-AzStorageContainer -name $StorageBlob
@@ -46,7 +46,7 @@ $SecondsLeft = $([math]::round(($Finishby - [datetime]::UtcNow).TotalSeconds))
 Write-Information "Found $($ImportEntitys.count) entities. ($TotalImages) images. Processing for $SecondsLeft seconds"
 # Write-information "processing as many as i can in $([math]::Round(($Finishby - [datetime]::UtcNow).totalseconds)) seconds"
 
-[void](new-item -ItemType Directory -Path $LocalStorage -Force)
+
 $workers = @()
 :Import for ($i = 0; $i -lt @($ImportEntitys).Count; $i++)
 {
