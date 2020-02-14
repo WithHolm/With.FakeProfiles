@@ -7,3 +7,5 @@ Get-ChildItem $PSScriptRoot -Filter "*Public.ps1" -Recurse|%{
     . $_.FullName
 }
 
+$Global:Build_Function = $null
+

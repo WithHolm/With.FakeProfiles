@@ -9,23 +9,31 @@ function Assert-FnEndpoint {
     )
     
     begin {
+        if(![string]::IsNullOrEmpty($Global:Build_Function))
+        {
+            $CallingScriptFile = [System.IO.FileInfo](Get-PSCallStack)[1].ScriptName
+            Write-Host "Endpoint Scriptfile is $CallingScriptFile"
+        }
+    }
+    
+    process {
         if([string]::IsNullOrEmpty($Global:Build_Function))
         {
             return $null
         }
-        
-        $CallingScriptFile = [System.IO.FileInfo](Get-PSCallStack)[1].ScriptName
-        Write-Host "Endpoint Scriptfile is $CallingScriptFile"
-    }
-    
-    process {
         $this = [ordered]@{
             # EndpointName = $FunctionName
-            Scriptfile = $Global:Build_Function.ModulePath
-            entrypoint = ""
+            scriptFile = $Global:Build_Function.ModulePath
+            entryPoint = ""
             bindings = @()
-            Disabled = $Disabled.IsPresent
-            Excluded = $Excluded.IsPresent
+        }
+        if($Disabled)
+        {
+            disabled = $Disabled.IsPresent
+        }
+        if($excluded)
+        {
+            excluded = $Excluded.IsPresent
         }
 
         #Get EntryPoint

@@ -22,7 +22,7 @@
         {
             "label": "BuildModule",
             "type": "shell",
-            "command": "pwsh -command {ipmo ./lib/Modules/AzFnHelp -force;Build-FnEndpoints -WorkingDirectory $pwd.path}",
+            "command": "pwsh -command {ipmo ./lib/Modules/AzFnHelp -force;Build-FnEndpoints}",
             "options": {
                 "cwd": "${workspaceFolder}/AzFunctions"
             },

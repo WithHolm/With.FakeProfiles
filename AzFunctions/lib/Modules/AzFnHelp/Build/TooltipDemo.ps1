@@ -2,10 +2,9 @@
 #So -> 
 
 #First load module azfnhelp
+ipmo ([System.IO.DirectoryInfo]$PSScriptRoot).Parent.FullName
 
-
-
-#Define basics
+# #Define basics
 $Global:Build_Function = @{
     WorkingDirectory = $WorkingDirectory.FullName
     ModulePath = ""
@@ -22,7 +21,7 @@ $Global:Build_Function = @{
     TooltipPreference = "Continue"
 }
 
-#define the rule
+# #define the rule
 $Global:Build_Function.tooltips = @{
     "routeprefix"=@{
         #Whatever you want
@@ -47,7 +46,7 @@ $Global:Build_Function.tooltips = @{
     }
 }
 
-#The actual code that should be defined in the cmdlet
+# #The actual code that should be defined in the cmdlet
 $binding = @"
 {
     "name": "Request",

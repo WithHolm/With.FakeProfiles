@@ -5,10 +5,11 @@ function Build-FnEndpoints {
         [String]$ScriptFilter = '*.function.ps1',
         [string]$ModuleName,
         [ValidateSet("Continue","Silentlycontinue","Stop")]
-        [switch]$TooltipPreference = "Continue"
+        [string]$TooltipPreference = "Continue"
     )
     
     begin {
+        
         Write-Verbose "Starting new build of $($WorkingDirectory.FullName)"
 
         if(!(test-path (join-path $WorkingDirectory.FullName '.\host.json')))
@@ -22,6 +23,7 @@ function Build-FnEndpoints {
             Hostconfig = Get-content (join-path $WorkingDirectory.FullName '.\host.json') -Raw|ConvertFrom-Json -Depth 99
             Functions = @{}
             TooltipPreference = $TooltipPreference
+            tooltips = (Import-PowerShellDataFile -Path (Join-Path $PSScriptRoot "Tooltips.psd1"))
         }
 
         if($TooltipPreference -eq "stop")
@@ -29,28 +31,7 @@ function Build-FnEndpoints {
             $ErrorActionPreference = $TooltipPreference
         }
 
-        $Global:Build_Function.tooltips = @{
-            "routeprefix"=@{
-                #Whatever you want
-                Scope = "HttpBinding"
-                #Info, Warning, Error
-                Importance = "Info"
-                #Command will always return true of false. 
-                #$Build_Function is global, but other variables is defined on the hashtable sent into the invoke-tooltips command
-                Rules = @(
-                    @{
-                        Name = "Binding has route defined"
-                        command = {![string]::IsNullOrEmpty($binding.Route)}
-                    },
-                    @{
-                        Name = "Host.json does not contains http.routeprefix"
-                        Command = {[string]::IsNullOrEmpty($Build_Function.hostconfig.routeprefix)}
-                    }
-                )
-                Triggered = $false
-                Message = "By default, az functions sets up 'site.com/API/{endpoint}'. The 'API' part can be removed by defining a empty string in  host.json\http\routeprefix"
-            }
-        }
+        # $Global:Build_Function.tooltips = 
     }
     
     process {

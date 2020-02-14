@@ -7,14 +7,14 @@ function Invoke-Tooltips {
     
     begin {
         $Variables.keys|%{
-            Write-debug "Setting local variable '$_'"
+            Write-debug "Setting local variable '$_'=$($Variable.$_)"
             Set-Variable -Name $_ -Value $Variable.$_ -Scope local
         }
     }
     
     process {
         $tooltips = $Build_Function.tooltips
-        $UsingTooltips = $tooltips.Keys|?{$tooltips.$_.scope -like $scope -and $tooltips.$_.Triggered -ne $true}
+        $UsingTooltips = @($tooltips.Keys|?{$tooltips.$_.scope -like $scope -and $tooltips.$_.Triggered -ne $true})
         $UsingTooltips|%{
             Write-Verbose "Checking tooltip rule '$_'"
             $tests = @($tooltips.$_.rules|%{

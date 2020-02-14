@@ -181,32 +181,7 @@ task Deploy -precondition {$Action -eq "Deploy"} -depends DeployResources,SetupS
             throw 
         }
     }
-
-    # Write-Information "Updating Solution config"
-    # $table = get-AzTableTable -resourceGroup $script:ResourceGroupName -storageAccountName $script:StorageAccountName -TableName "Config"
-    # foreach($item in (FlattenObject -Object $options.project.azconfig))
-    # {
-    #     "*****"
-    #     $Arr = $item.keys.split()
-    #     if($arr.count -eq 2)
-    #     {
-    #         $param = @{
-    #             PartitionKey = $Arr[0]
-    #             RowKey = $Arr[1]
-    #             property = @{
-    #                 Value
-    #             }
-    #         }
-    #     }
-    #     elseif($arr.count -gt 2)
-    #     {
-    #         $param = @{
-    #             PartitionKey = $Arr[0]
-    #             RowKey = $Arr[1]
-    #         }
-    #     }
-    #     $table|Add-AzTableRow @param -property
-    # }
+    resource ""
 }
 
 task Teardown -precondition {$Action -eq "Teardown"} {

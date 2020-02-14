@@ -1,7 +1,7 @@
 # ipmo C:\Users\Phil\source\repos\With.FakeProfiles\AzFunctions\lib\Modules\AzFnHelp\AzFnHelp.psm1 -Force
-Assert-FnEndpoint -FunctionName "GenerateImage" -bindings {
-    Assert-FnInputBinding -Queue -QueueName "generateimage" -ConnectionStringEnvName 'AzureWebJobsStorage' -Verbose
-} -Verbose
+# Assert-FnEndpoint -FunctionName "GenerateImage" -bindings {
+#     Assert-FnInputBinding -Queue -QueueName "generateimage" -ConnectionStringEnvName 'AzureWebJobsStorage' -Verbose
+# } -Verbose
 # New-Item "$PSScriptRoot\test.txt"
 Function New-Image{
     # Input bindings are passed in via param block.
