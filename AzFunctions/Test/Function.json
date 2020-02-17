@@ -1,6 +1,6 @@
 {
   "scriptFile": "../lib/FakeProfile.psm1",
-  "entrypoint": "Test-fun",
+  "entryPoint": "Test-fun",
   "bindings": [
     {
       "name": "Request",
@@ -10,8 +10,7 @@
         "post"
       ],
       "type": "httpTrigger",
-      "authLevel": "admin",
-      "route": "test/{Id:int}"
+      "authLevel": "admin"
     },
     {
       "name": "Response",

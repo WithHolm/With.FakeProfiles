@@ -17,6 +17,15 @@ variable "storage_queues" {
   default = []
 }
 
+variable "tags" {
+  type = map(string)
+  description = "A map of the tags to use on the resources that are deployed with this module."
+  default = {
+    source = "terraform"
+  }
+}
+
+
 variable "storage_containers" {
   type    = list(string)
   default = ["pictures"]
@@ -27,10 +36,10 @@ locals {
   location    = "West Europe"
 }
 
-
 resource "azurerm_resource_group" "fake" {
   name     = join("-", [var.Pipeline, local.projectName, "rg"])
   location = local.location
+  tags = var.tags
 }
 
 # Storage
@@ -42,6 +51,7 @@ resource "azurerm_storage_account" "fake" {
   account_replication_type  = "LRS"
   account_tier              = "Standard"
   enable_https_traffic_only = true
+  tags = var.tags
 }
 
 # 1 container for each inputelement
@@ -76,6 +86,7 @@ resource "azurerm_app_service_plan" "fake" {
     tier = "Free"
     size = "F1"
   }
+  tags = var.tags
 }
 
 resource "azurerm_function_app" "fake" {
@@ -98,6 +109,7 @@ resource "azurerm_function_app" "fake" {
   site_config {
     use_32_bit_worker_process = true
   }
+  tags = var.tags
 }
 
 resource "azurerm_cognitive_account" "fake" {
@@ -106,14 +118,24 @@ resource "azurerm_cognitive_account" "fake" {
   resource_group_name = azurerm_resource_group.fake.name
   kind                = "Face"
   sku_name            = "S0"
+  tags = var.tags
 }
 
-output "FunctionAppName" {
+output "functionAppName" {
   value = azurerm_function_app.fake.name
 }
-output "ResourceGroupName" {
+output "resourceGroupName" {
   value = azurerm_resource_group.fake.name
 }
+
+output "publish_username" {
+  value = azurerm_function_app.fake.site_credential[0].username
+}
+output "publish_password" {
+  value = azurerm_function_app.fake.site_credential[0].password
+  sensitive = true
+}
+
 
 
 
